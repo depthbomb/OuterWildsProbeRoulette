@@ -18,7 +18,7 @@ Make sure `manifest.json` sits directly in that folder, then launch through the 
 
 ## Settings
 
-You can change the launch chance, first eligible loop, target, death type, and player-hit radius in the mod settings. For testing, set the chance to 100% and pick Player or Ship. A bigger hit radius makes near misses count, too.
+You can change the launch chance, first eligible loop, target, death type, and player-hit radius in the mod settings. The chance field shows the current percentage; select it to enter a number from 0 to 100 (decimals work too). For testing, set the chance to 100% and pick Player or Ship. A bigger hit radius makes near misses count, too.
 
 This is a beta. Other mods and unexpected movement can throw off the aim. If something looks wrong, turn on **Log closest approach** and include the `[Probe Roulette]` log lines when reporting it.
 

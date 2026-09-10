@@ -3,12 +3,7 @@
     "enabled": true,
     "settings": {
         "First targeted loop": 7,
-        "Targeted shot chance (%)": {
-            "type": "slider",
-            "min": 0,
-            "max": 100,
-            "value": 10
-        },
+        "Targeted shot chance (%)": 10,
         "Target selection": {
             "type": "selector",
             "value": "Random (50/50)",

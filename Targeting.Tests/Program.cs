@@ -259,7 +259,7 @@ internal static class Program
         Require(metadata.GetProperty("filename").GetString()                                     == "ProbeRoulette.dll", "Manifest points at the wrong DLL.");
         Require(metadata.GetProperty("uniqueName").GetString()                                   == "Depthbomb.ProbeRoulette", "Mod identity changed.");
         Require(settings.GetProperty("First targeted loop").GetInt32()                           == 7, "Beta loop default changed.");
-        Require(settings.GetProperty("Targeted shot chance (%)").GetProperty("value").GetInt32() == 10, "Beta shipped with development targeting chance.");
+        Require(settings.GetProperty("Targeted shot chance (%)").GetInt32() == 10, "Beta shipped with development targeting chance.");
         Require(settings.GetProperty("Target selection").GetProperty("value").GetString()        == "Random (50/50)", "Beta shipped with forced targeting.");
         Require(!settings.GetProperty("Log closest approach").GetBoolean(), "Beta diagnostics should be opt-in.");
         Require(settings.GetProperty("Probe hits kill player").GetBoolean(), "Player hits should be enabled.");
