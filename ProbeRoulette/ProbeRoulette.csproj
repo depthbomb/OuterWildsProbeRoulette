@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net48</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>disable</Nullable>
+        <AssemblyName>ProbeRoulette</AssemblyName>
+        <Version>0.2.0</Version>
+        <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+        <GamePath Condition="'$(GamePath)' == ''">$(MSBuildProgramFiles32)\Steam\steamapps\common\Outer Wilds</GamePath>
+        <OwmlPath Condition="'$(OwmlPath)' == ''">$(APPDATA)\OuterWildsModManager\OWML</OwmlPath>
+        <ManagedPath>$(GamePath)\OuterWilds_Data\Managed</ManagedPath>
+        <DebugType>portable</DebugType>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <Deterministic>true</Deterministic>
+        <PathMap>$(MSBuildProjectDirectory)=/src/ProbeRoulette</PathMap>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all"/>
+        <Reference Include="Assembly-CSharp">
+            <HintPath>$(ManagedPath)\Assembly-CSharp.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine">
+            <HintPath>$(ManagedPath)\UnityEngine.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule">
+            <HintPath>$(ManagedPath)\UnityEngine.CoreModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UnityEngine.PhysicsModule">
+            <HintPath>$(ManagedPath)\UnityEngine.PhysicsModule.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="OWML.Common">
+            <HintPath>$(OwmlPath)\OWML.Common.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="OWML.ModHelper">
+            <HintPath>$(OwmlPath)\OWML.ModHelper.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="0Harmony">
+            <HintPath>$(OwmlPath)\0Harmony.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <None Update="manifest.json" CopyToOutputDirectory="PreserveNewest"/>
+        <None Update="default-config.json" CopyToOutputDirectory="PreserveNewest"/>
+    </ItemGroup>
+</Project>

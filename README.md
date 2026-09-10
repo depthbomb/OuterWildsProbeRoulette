@@ -1,0 +1,33 @@
+# Probe Roulette
+
+It seems the Nomai like to play pranks.
+
+Adds a configurable chance for the orbital probe cannon to either fire directly at you or your ship starting at loop #7.
+
+## Install
+
+You'll need [Outer Wilds Mod Manager](https://outerwildsmods.com/mod-manager/) and OWML.
+
+Close the game, then extract the mod ZIP into:
+
+```text
+%APPDATA%\OuterWildsModManager\OWML\Mods\Depthbomb.ProbeRoulette
+```
+
+Make sure `manifest.json` sits directly in that folder, then launch through the mod manager.
+
+## Settings
+
+You can change the launch chance, first eligible loop, target, death type, and player-hit radius in the mod settings. For testing, set the chance to 100% and pick Player or Ship. A bigger hit radius makes near misses count, too.
+
+This is a beta. Other mods and unexpected movement can throw off the aim. If something looks wrong, turn on **Log closest approach** and include the `[Probe Roulette]` log lines when reporting it.
+
+## Building
+
+With the .NET 10 SDK, Outer Wilds, and OWML installed:
+
+```powershell
+.\Install.ps1
+```
+
+That builds, runs the checks, and installs the mod. Add `-PackageOnly` to just make the release packages. Custom install locations can be passed with `-GamePath` and `-OwmlPath`.

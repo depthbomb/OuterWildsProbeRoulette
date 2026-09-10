@@ -1,0 +1,37 @@
+{
+    "$schema": "https://raw.githubusercontent.com/ow-mods/owml/master/schemas/config_schema.json",
+    "enabled": true,
+    "settings": {
+        "First targeted loop": 7,
+        "Targeted shot chance (%)": {
+            "type": "slider",
+            "min": 0,
+            "max": 100,
+            "value": 10
+        },
+        "Target selection": {
+            "type": "selector",
+            "value": "Random (50/50)",
+            "options": [
+                "Random (50/50)",
+                "Player",
+                "Ship"
+            ]
+        },
+        "Log closest approach": false,
+        "Probe hits kill player": true,
+        "Player hit death type": {
+            "type": "selector",
+            "value": "Impact",
+            "options": [
+                "Impact",
+                "Crushed",
+                "Asphyxiation",
+                "Energy",
+                "Lava",
+                "Digestion"
+            ]
+        },
+        "Probe hit radius (m)": 1.0
+    }
+}
