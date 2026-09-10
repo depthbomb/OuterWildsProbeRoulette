@@ -6,9 +6,13 @@ Adds a configurable chance for the orbital probe cannon to either fire directly 
 
 ## Install
 
-You'll need [Outer Wilds Mod Manager](https://outerwildsmods.com/mod-manager/) and OWML.
+The easiest way is through [Outer Wilds Mod Manager](https://outerwildsmods.com/mod-manager/):
 
-Close the game, then extract the mod ZIP into:
+1. Open the manager and install OWML if prompted.
+2. Search for **Probe Roulette** in **Get Mods** and install it. If it isn't listed yet, download the mod ZIP from the [latest release](https://github.com/depthbomb/OuterWildsProbeRoulette/releases/latest) and use the manager's option to install from a ZIP file.
+3. Launch the game through the manager.
+
+For a manual install on Windows, close the game and extract the mod ZIP into:
 
 ```text
 %APPDATA%\OuterWildsModManager\OWML\Mods\Depthbomb.ProbeRoulette
