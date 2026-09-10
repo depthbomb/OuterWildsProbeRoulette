@@ -2,9 +2,9 @@
     "$schema": "https://raw.githubusercontent.com/ow-mods/owml/master/schemas/manifest_schema.json",
     "filename": "ProbeRoulette.dll",
     "author": "depthbomb",
-    "name": "Probe Roulette (Beta)",
+    "name": "Probe Roulette",
     "uniqueName": "Depthbomb.ProbeRoulette",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "owmlVersion": "2.16.3",
     "minGameVersion": "1.1.16.1372",
     "dependencies": []

@@ -4,7 +4,7 @@
         <LangVersion>latest</LangVersion>
         <Nullable>disable</Nullable>
         <AssemblyName>ProbeRoulette</AssemblyName>
-        <Version>0.2.1</Version>
+        <Version>0.2.2</Version>
         <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
         <GamePath Condition="'$(GamePath)' == ''">$(MSBuildProgramFiles32)\Steam\steamapps\common\Outer Wilds</GamePath>
         <OwmlPath Condition="'$(OwmlPath)' == ''">$(APPDATA)\OuterWildsModManager\OWML</OwmlPath>
