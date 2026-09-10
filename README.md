@@ -4,6 +4,12 @@ It seems the Nomai like to play pranks.
 
 Adds a configurable chance for the orbital probe cannon to either fire directly at you or your ship starting at loop #7.
 
+<div align="left">
+      <a href="https://www.youtube.com/watch?v=CuJ2r6XnTAE">
+         <img src="https://img.youtube.com/vi/CuJ2r6XnTAE/1.jpg" style="width:100%;">
+      </a>
+</div>
+
 ## Install
 
 The easiest way is through [Outer Wilds Mod Manager](https://outerwildsmods.com/mod-manager/):
