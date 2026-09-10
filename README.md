@@ -6,7 +6,7 @@ Adds a configurable chance for the orbital probe cannon to either fire directly 
 
 <div align="left">
       <a href="https://www.youtube.com/watch?v=CuJ2r6XnTAE">
-         <img src="https://img.youtube.com/vi/CuJ2r6XnTAE/1.jpg" style="width:100%;">
+         <img src="https://i.ytimg.com/vi/CuJ2r6XnTAE/maxres1.jpg" style="width:100%;">
       </a>
 </div>
 
