@@ -4,6 +4,8 @@ It seems the Nomai like to play pranks.
 
 Adds a configurable chance for the orbital probe cannon to either fire directly at you or your ship starting at loop #7.
 
+## Video demonstration
+
 <div align="left">
       <a href="https://www.youtube.com/watch?v=CuJ2r6XnTAE">
          <img src="https://i.ytimg.com/vi/CuJ2r6XnTAE/maxres1.jpg" style="width:100%;">
