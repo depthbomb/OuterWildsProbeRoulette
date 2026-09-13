@@ -147,8 +147,10 @@ internal static class CannonPatches
     {
         var mod = ProbeRouletteMod.Instance;
         // Always release the debris, even if targeting was disabled or the aim calculation failed.
-        __instance.GetComponent<LaunchTargeting>()?.CompleteLaunch();
+        var state = __instance.GetComponent<LaunchTargeting>();
+        state?.CompleteLaunch();
         if (mod                           == null                || !mod.TargetingEnabled || ____probeBody == null ||
+            state                         == null                || !state.IsTargetedShot ||
             LoadManager.GetCurrentScene() != OWScene.SolarSystem || PlayerData.LoadLoopCount()             < mod.FirstLoop)
         {
             return;

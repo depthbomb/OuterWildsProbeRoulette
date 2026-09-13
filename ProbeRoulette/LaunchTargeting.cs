@@ -9,6 +9,8 @@ namespace ProbeRoulette;
 
 internal sealed class LaunchTargeting : MonoBehaviour
 {
+    public bool IsTargetedShot { get; private set; }
+
     private const float                        LaunchBoost = 500f;
     private const float                        Horizon     = 45f;
     private       float                        _arrivalTime;
@@ -126,6 +128,8 @@ internal sealed class LaunchTargeting : MonoBehaviour
         {
             RotateAssembly(Quaternion.FromToRotation(cannon.transform.forward, direction.normalized));
         }
+
+        IsTargetedShot = true;
     }
 
     public void PrepareLaunch()
