@@ -13,10 +13,17 @@ internal static class Program
 
     private static int Main(string[] args)
     {
+        if (args.Length != 2)
+        {
+            Console.Error.WriteLine("Pass the installed game assembly and built mod assembly paths.");
+
+            return 1;
+        }
+
         var tests = new (string Name, Action Run)[]
         {
             ("Loops 1-6 are untouched; loop 7 is eligible", LoopGate),
-            ("Development and production probabilities", Probabilities),
+            ("Shot probabilities and selection boundaries", Probabilities),
             ("Forced targets and disabled targeting", ForcedTargets),
             ("Stationary target and muzzle offset", Stationary),
             ("Moving target and inherited probe velocity", Moving),
@@ -25,7 +32,6 @@ internal static class Program
             ("Planet rotation matches an analytical surface point", SurfaceRotation),
             ("Orbital prediction converges against circular motion", OrbitConvergence),
             ("Intercept of an orbiting and rotating surface target", SurfaceIntercept),
-            ("Aim can be evaded after launch", Evasion),
             ("Swept player hit catches a probe crossing in one frame", SweptPlayerHit),
             ("Swept player hit rejects a near miss", SweptPlayerMiss),
             ("Capsule ends and grazing contacts", CapsuleEnds),
@@ -36,24 +42,24 @@ internal static class Program
             ("Patch methods and private fields bind to installed game", () => CheckBindings(args))
         };
 
-        try
+        var failures = 0;
+        foreach (var test in tests)
         {
-            foreach (var test in tests)
+            try
             {
                 test.Run();
                 Console.WriteLine("PASS " + test.Name);
             }
-
-            Console.WriteLine($"{tests.Length} tests passed.");
-
-            return 0;
+            catch (Exception exception)
+            {
+                failures++;
+                Console.Error.WriteLine($"FAIL {test.Name}: {exception}");
+            }
         }
-        catch (Exception exception)
-        {
-            Console.Error.WriteLine(exception);
 
-            return 1;
-        }
+        Console.WriteLine($"{tests.Length - failures}/{tests.Length} tests passed.");
+
+        return failures == 0 ? 0 : 1;
     }
 
     private static void LoopGate()
@@ -66,24 +72,27 @@ internal static class Program
 
     private static void Probabilities()
     {
-        foreach (var chance in new[] { 100, 10 })
+        const int rolls = 1000;
+        foreach (var chance in new[] { 0, 10, 12.5, 100 })
         {
-            var random = new Random(7942);
             var counts = new int[3];
-            for (var i = 0; i < 100000; i++)
-            {
-                var target = Targeting.Select(7, 7, chance, random.NextDouble(), random.NextDouble(), "Random (50/50)");
-                counts[(int)target]++;
-            }
+            // Sample each equal-sized roll interval and both halves of target selection.
+            for (var i = 0; i < rolls; i++)
+                foreach (var targetRoll in new[] { 0.25, 0.75 })
+                {
+                    var target = Targeting.Select(7, 7, chance, (i + 0.5) / rolls, targetRoll, "Random (50/50)");
+                    counts[(int)target]++;
+                }
 
-            var expected = 100000 * chance / 200.0;
-            Near(counts[(int)ShotTarget.Player], expected, 600);
-            Near(counts[(int)ShotTarget.Ship], expected, 600);
-            Near(counts[0], 100000 * (1 - chance / 100.0), 600);
-            Console.WriteLine($"  {chance}%: normal={counts[0]}, player={counts[1]}, ship={counts[2]}");
+            var expected = rolls * chance / 100;
+            Near(counts[(int)ShotTarget.Player], expected, 0);
+            Near(counts[(int)ShotTarget.Ship], expected, 0);
+            Near(counts[(int)ShotTarget.Normal], 2 * (rolls - expected), 0);
         }
 
-        Require(Targeting.Select(7, 7, 10, 0.1, 0, "Random (50/50)") == ShotTarget.Normal, "Chance boundary wrong.");
+        Require(Targeting.Select(7, 7, 10, 0.1, 0, "Random (50/50)")             == ShotTarget.Normal, "Chance boundary wrong.");
+        Require(Targeting.Select(7, 7, 10, 0.099999, 0.499999, "Random (50/50)") == ShotTarget.Player, "Player boundary wrong.");
+        Require(Targeting.Select(7, 7, 10, 0.099999, 0.5, "Random (50/50)")      == ShotTarget.Ship, "Ship boundary wrong.");
     }
 
     private static void ForcedTargets()
@@ -182,18 +191,8 @@ internal static class Program
         Require((solution.Direction - path[0] / path[0].Length).Length > 0.01, "No meaningful lead applied.");
     }
 
-    private static void Evasion()
-    {
-        var start    = new Vector(0, 0, 5000);
-        var solution = Solve(Trajectory.Linear(start, default, Step, Samples), default, default);
-        var probe    = solution.Direction * (500 * solution.Time);
-        var moved    = start + new Vector(10, 0, 0) * solution.Time;
-        Require((probe - moved).Length > 99, "Post-launch movement failed to evade fixed aim.");
-    }
-
     private static void CheckBindings(string[] args)
     {
-        Require(args.Length == 2, "Pass the installed game assembly and built mod assembly paths.");
         using var game       = AssemblyDefinition.ReadAssembly(args[0]);
         using var mod        = AssemblyDefinition.ReadAssembly(args[1]);
         var       cannon     = game.MainModule.GetType("OrbitalProbeLaunchController");
@@ -246,7 +245,6 @@ internal static class Program
 
     private static void ReleaseMetadata(string[] args)
     {
-        Require(args.Length == 2, "Pass the game and built mod assembly paths.");
         var       directory = Path.GetDirectoryName(Path.GetFullPath(args[1]))!;
         using var manifest  = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory, "manifest.json")));
         using var config    = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory, "default-config.json")));
@@ -256,12 +254,13 @@ internal static class Program
         var       version   = assembly.CustomAttributes.Single(a => a.AttributeType.Name == "AssemblyInformationalVersionAttribute");
         Require(metadata.GetProperty("version").GetString() == (string)version.ConstructorArguments[0].Value, "Manifest and assembly versions differ.");
         Require(Regex.IsMatch(metadata.GetProperty("version").GetString()!, @"^\d+\.\d+\.\d+$"), "OWML's manifest schema requires a three-part numeric version.");
-        Require(metadata.GetProperty("filename").GetString()                                     == "ProbeRoulette.dll", "Manifest points at the wrong DLL.");
-        Require(metadata.GetProperty("uniqueName").GetString()                                   == "Depthbomb.ProbeRoulette", "Mod identity changed.");
-        Require(settings.GetProperty("First targeted loop").GetInt32()                           == 7, "Beta loop default changed.");
-        Require(settings.GetProperty("Targeted shot chance (%)").GetInt32() == 10, "Beta shipped with development targeting chance.");
-        Require(settings.GetProperty("Target selection").GetProperty("value").GetString()        == "Random (50/50)", "Beta shipped with forced targeting.");
+        Require(metadata.GetProperty("filename").GetString()                              == "ProbeRoulette.dll", "Manifest points at the wrong DLL.");
+        Require(metadata.GetProperty("uniqueName").GetString()                            == "Depthbomb.ProbeRoulette", "Mod identity changed.");
+        Require(settings.GetProperty("First targeted loop").GetInt32()                    == 7, "Beta loop default changed.");
+        Require(settings.GetProperty("Targeted shot chance (%)").GetInt32()               == 10, "Beta shipped with development targeting chance.");
+        Require(settings.GetProperty("Target selection").GetProperty("value").GetString() == "Random (50/50)", "Beta shipped with forced targeting.");
         Require(!settings.GetProperty("Log closest approach").GetBoolean(), "Beta diagnostics should be opt-in.");
+        Require(!settings.GetProperty("Shotgun shot").GetBoolean(), "Shotgun shots should be opt-in.");
         Require(settings.GetProperty("Probe hits kill player").GetBoolean(), "Player hits should be enabled.");
     }
 

@@ -9,10 +9,9 @@ namespace ProbeRoulette;
 
 internal sealed class LaunchTargeting : MonoBehaviour
 {
-    public bool IsTargetedShot { get; private set; }
+    private const float LaunchBoost = 500f;
+    private const float Horizon     = 45f;
 
-    private const float                        LaunchBoost = 500f;
-    private const float                        Horizon     = 45f;
     private       float                        _arrivalTime;
     private       DebrisPose[]                 _assembledDebris;
     private       OrbitalProbeLaunchController _cannon;
@@ -28,7 +27,10 @@ internal sealed class LaunchTargeting : MonoBehaviour
     private Vector3          _previousSeparation;
     private OWRigidbody      _probe;
     private ShotTarget       _selection;
+    private bool             _spreadFired;
     private OWRigidbody      _target;
+
+    public bool IsTargetedShot { get; private set; }
 
     private void FixedUpdate()
     {
@@ -37,7 +39,7 @@ internal sealed class LaunchTargeting : MonoBehaviour
             return;
         }
 
-        if (_probe == null || _target == null)
+        if (!_probe || !_target)
         {
             FinishMonitoring("probe or target no longer available");
 
@@ -76,11 +78,23 @@ internal sealed class LaunchTargeting : MonoBehaviour
     public void CompleteLaunch()
     {
         _prepared = true;
+
         if (!_monitoring)
         {
             // No need to keep getting Unity callbacks for the rest of the loop.
             enabled = false;
         }
+    }
+
+    public void FireSpread()
+    {
+        if (_spreadFired || !IsTargetedShot || !_mod.TargetingEnabled || !_mod.ShotgunShot || _probe == null)
+        {
+            return;
+        }
+
+        _spreadFired = true;
+        ShotgunShot.Fire(_probe, _cannon.transform.forward, _mod);
     }
 
     public void Initialize(OrbitalProbeLaunchController cannon,
@@ -91,7 +105,7 @@ internal sealed class LaunchTargeting : MonoBehaviour
     {
         _cannon = cannon;
         _probe  = probe;
-        _debris = debris ?? new OWRigidbody[0];
+        _debris = debris ?? [];
         _mod    = mod;
 
         // Our coin flips shouldn't change the game's other random events.
@@ -179,8 +193,7 @@ internal sealed class LaunchTargeting : MonoBehaviour
         _arrivalTime        = (float)solution.Time;
         _previousSeparation = point - _probe.GetPosition();
         _monitoring         = _mod.LogApproach;
-        _mod.Log($"Firing at {_selection}; predicted arrival {_arrivalTime:F3}s; " +
-                 $"range {_previousSeparation.magnitude:F1}m; inherited speed {inherited.Length:F2}m/s. No homing.");
+        _mod.Log($"Firing at {_selection}; predicted arrival {_arrivalTime:F3}s; range {_previousSeparation.magnitude:F1}m; inherited speed {inherited.Length:F2}m/s.");
     }
 
     private void CaptureDebrisAssembly()
@@ -201,14 +214,14 @@ internal sealed class LaunchTargeting : MonoBehaviour
 
     private void RestoreDebrisAssembly()
     {
-        if (_assembledDebris == null || _cannon == null)
+        if (_assembledDebris == null || !_cannon)
         {
             return;
         }
 
         foreach (var pose in _assembledDebris)
         {
-            if (pose.Body == null)
+            if (!pose.Body)
             {
                 continue;
             }
@@ -271,8 +284,7 @@ internal sealed class LaunchTargeting : MonoBehaviour
 
     private void FinishMonitoring(string reason)
     {
-        _mod.Log($"{_selection} closest approach: {_closestDistance:F3}m at {_closestTime:F3}s " +
-                 $"(predicted {_arrivalTime:F3}s; {reason}). Distance is to the aim point, not a collision report.");
+        _mod.Log($"{_selection} closest approach: {_closestDistance:F3}m at {_closestTime:F3}s (predicted {_arrivalTime:F3}s; {reason}). Distance is to the aim point, not a collision report.");
         _monitoring = false;
         enabled     = false;
     }

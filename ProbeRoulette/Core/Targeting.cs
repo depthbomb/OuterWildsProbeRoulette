@@ -30,17 +30,12 @@ internal static class Targeting
             return ShotTarget.Normal;
         }
 
-        if (selection == "Player")
+        return selection switch
         {
-            return ShotTarget.Player;
-        }
-
-        if (selection == "Ship")
-        {
-            return ShotTarget.Ship;
-        }
-
-        return targetRoll < 0.5 ? ShotTarget.Player : ShotTarget.Ship;
+            "Player" => ShotTarget.Player,
+            "Ship"   => ShotTarget.Ship,
+            _        => targetRoll < 0.5 ? ShotTarget.Player : ShotTarget.Ship
+        };
     }
 
     // Everything here uses the cannon's launch position as zero, with no rotating reference frame.

@@ -8,14 +8,19 @@ namespace ProbeRoulette;
 
 public sealed class ProbeRouletteMod : ModBehaviour
 {
+    private const float DefaultProbeHitRadius = 20f;
+
     private         Harmony          _harmony;
     internal        int              FirstLoop          { get; private set; } = 7;
     internal        float            Chance             { get; private set; } = 10f;
     internal        string           Selection          { get; private set; } = "Random (50/50)";
     internal        bool             LogApproach        { get; private set; }
+    internal        bool             ShotgunShot        { get; private set; }
+    internal        int              ShotgunProbeCount  { get; private set; } = 9;
+    internal        float            ShotgunSpread      { get; private set; } = 5f;
     internal        bool             TargetingEnabled   { get; private set; } = true;
     internal        bool             PlayerHitsKill     { get; private set; } = true;
-    internal        float            ProbeHitRadius     { get; private set; } = 1f;
+    internal        float            ProbeHitRadius     { get; private set; } = DefaultProbeHitRadius;
     internal        DeathType        PlayerHitDeathType { get; private set; } = DeathType.Impact;
     internal static ProbeRouletteMod Instance           { get; private set; }
 
@@ -48,13 +53,16 @@ public sealed class ProbeRouletteMod : ModBehaviour
 
     public override void Configure(IModConfig config)
     {
-        FirstLoop        = Math.Max(1, ReadSetting(config, "First targeted loop", 7));
-        Chance           = FiniteClamp(ReadSetting(config, "Targeted shot chance (%)", 10f), 0f, 100f, 10f);
-        Selection        = ReadSetting(config, "Target selection", "Random (50/50)");
-        LogApproach      = ReadSetting(config, "Log closest approach", false);
-        TargetingEnabled = config != null && config.Enabled;
-        PlayerHitsKill   = ReadSetting(config, "Probe hits kill player", true);
-        ProbeHitRadius   = FiniteClamp(ReadSetting(config, "Probe hit radius (m)", 1f), 0.1f, 10f, 1f);
+        FirstLoop         = Math.Max(1, ReadSetting(config, "First targeted loop", 7));
+        Chance            = FiniteClamp(ReadSetting(config, "Targeted shot chance (%)", 10f), 0f, 100f, 10f);
+        Selection         = ReadSetting(config, "Target selection", "Random (50/50)");
+        LogApproach       = ReadSetting(config, "Log closest approach", false);
+        ShotgunShot       = ReadSetting(config, "Shotgun shot", false);
+        ShotgunProbeCount = Mathf.Clamp(ReadSetting(config, "Shotgun probe count (including center)", 9), 1, 64);
+        ShotgunSpread     = FiniteClamp(ReadSetting(config, "Shotgun spread (degrees from center)", 5f), 0f, 90f, 5f);
+        TargetingEnabled  = config is { Enabled: true };
+        PlayerHitsKill    = ReadSetting(config, "Probe hits kill player", true);
+        ProbeHitRadius    = FiniteClamp(ReadSetting(config, "Probe hit radius (m)", DefaultProbeHitRadius), 0.1f, 100f, DefaultProbeHitRadius);
 
         var deathChoice = ReadSetting(config, "Player hit death type", "Impact");
         PlayerHitDeathType = deathChoice switch
@@ -133,7 +141,9 @@ internal static class CannonPatches
     {
         try
         {
-            __instance.GetComponent<LaunchTargeting>()?.PrepareLaunch();
+            var state = __instance.GetComponent<LaunchTargeting>();
+            state?.PrepareLaunch();
+            state?.FireSpread();
         }
         catch (Exception exception)
         {
@@ -145,13 +155,13 @@ internal static class CannonPatches
     [HarmonyPatch("LaunchProbe")]
     private static void AfterLaunch(OrbitalProbeLaunchController __instance, OWRigidbody ____probeBody)
     {
-        var mod = ProbeRouletteMod.Instance;
+        var mod   = ProbeRouletteMod.Instance;
         // Always release the debris, even if targeting was disabled or the aim calculation failed.
         var state = __instance.GetComponent<LaunchTargeting>();
         state?.CompleteLaunch();
         if (mod                           == null                || !mod.TargetingEnabled || ____probeBody == null ||
             state                         == null                || !state.IsTargetedShot ||
-            LoadManager.GetCurrentScene() != OWScene.SolarSystem || PlayerData.LoadLoopCount()             < mod.FirstLoop)
+            LoadManager.GetCurrentScene() != OWScene.SolarSystem || PlayerData.LoadLoopCount() < mod.FirstLoop)
         {
             return;
         }

@@ -35,7 +35,7 @@ internal static class HitGeometry
         {
             var s = (b * f - c * e) / denominator;
             var t = (a * f - b * c) / denominator;
-            if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+            if (s is >= 0 and <= 1 && t is >= 0 and <= 1)
             {
                 var gap = offset + first * s - second * t;
                 if (Vector.Dot(gap, gap) <= radiusSquared)

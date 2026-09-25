@@ -13,22 +13,22 @@ internal sealed class ProbePlayerHitDetector : MonoBehaviour
     private DeathManager     _deathManager;
     private ProbeRouletteMod _mod;
     private OWRigidbody      _player;
-    private Vector3          _previousLocalPosition;
+    private Vector3          _previousRelativePosition;
     private OWRigidbody      _probe;
     private bool             _tracking;
 
     private void FixedUpdate()
     {
         var manager = _deathManager;
-        if (_mod == null || _probe == null || _player == null || _capsule == null || manager == null || manager.IsPlayerDying() || manager.IsPlayerDead())
+        if (!_mod || !_probe || !_player || !_capsule || !manager || manager.IsPlayerDying() || manager.IsPlayerDead())
         {
             enabled = false;
 
             return;
         }
 
-        // Local coordinates cancel out the game's world-origin shifts and the player's movement.
-        var current = _capsuleTransform.InverseTransformPoint(_probe.GetPosition());
+        // Relative positions cancel world-origin shifts and movement without storing the player's rotation.
+        var current = _probe.GetPosition() - _capsuleTransform.position;
         if (!_mod.TargetingEnabled || !_mod.PlayerHitsKill || !_capsule.enabled || !_capsule.gameObject.activeInHierarchy)
         {
             _tracking = false;
@@ -38,8 +38,8 @@ internal sealed class ProbePlayerHitDetector : MonoBehaviour
 
         if (!_tracking)
         {
-            _previousLocalPosition = current;
-            _tracking              = true;
+            _previousRelativePosition = current;
+            _tracking                 = true;
 
             return;
         }
@@ -51,9 +51,12 @@ internal sealed class ProbePlayerHitDetector : MonoBehaviour
         var scale        = _capsuleTransform.lossyScale;
         var minimumScale = Mathf.Max(0.001f, Mathf.Min(Mathf.Abs(scale.x), Mathf.Abs(scale.y), Mathf.Abs(scale.z)));
         var radius       = _capsule.radius + _mod.ProbeHitRadius / minimumScale;
+        // Use the same rotation and scale for both endpoints, even if the player turned since the last tick.
+        var start        = _capsuleTransform.InverseTransformVector(_previousRelativePosition);
+        var end          = _capsuleTransform.InverseTransformVector(current);
         // At this speed the probe can cross the whole player between frames. Check the path, too.
-        var hit          = HitGeometry.SweptSphereHitsCapsule(ToVector(_previousLocalPosition), ToVector(current), ToVector(from), ToVector(to), radius);
-        _previousLocalPosition = current;
+        var hit          = HitGeometry.SweptSphereHitsCapsule(ToVector(start), ToVector(end), ToVector(from), ToVector(to), radius);
+        _previousRelativePosition = current;
         if (!hit)
         {
             return;
@@ -108,12 +111,12 @@ internal sealed class ProbePlayerHitDetector : MonoBehaviour
             return;
         }
 
-        _capsuleTransform         =  _capsule.transform;
-        _deathManager             =  Locator.GetDeathManager();
-        _previousLocalPosition    =  _capsuleTransform.InverseTransformPoint(probe.GetPosition());
-        _tracking                 =  true;
-        _player.OnWarpOWRigidbody += OnBodyWarped;
-        _probe.OnWarpOWRigidbody  += OnBodyWarped;
+        _capsuleTransform          =  _capsule.transform;
+        _deathManager              =  Locator.GetDeathManager();
+        _previousRelativePosition  =  probe.GetPosition() - _capsuleTransform.position;
+        _tracking                  =  true;
+        _player.OnWarpOWRigidbody  += OnBodyWarped;
+        _probe.OnWarpOWRigidbody   += OnBodyWarped;
         mod.Log($"Player hit detection armed: {mod.PlayerHitDeathType}; probe radius {mod.ProbeHitRadius:F2}m.");
     }
 

@@ -13,6 +13,9 @@
                 "Ship"
             ]
         },
+        "Shotgun shot": false,
+        "Shotgun probe count (including center)": 9,
+        "Shotgun spread (degrees from center)": 5.0,
         "Log closest approach": false,
         "Probe hits kill player": true,
         "Player hit death type": {
@@ -27,6 +30,6 @@
                 "Digestion"
             ]
         },
-        "Probe hit radius (m)": 1.0
+        "Probe hit radius (m)": 20.0
     }
 }
